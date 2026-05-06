@@ -1,20 +1,21 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
 import json
-import re
 import pdfplumber
+import re
+import os
 
 app = FastAPI()
 
 # -------------------------
-# DASHBOARD PAGE
+# FRONTEND
 # -------------------------
 @app.get("/")
 def home():
     return FileResponse("frontend/index.html")
 
 # -------------------------
-# LOAD PORTFOLIO
+# DASHBOARD DATA
 # -------------------------
 @app.get("/run")
 def run():
@@ -27,42 +28,54 @@ def run():
     return {"portfolio": portfolio}
 
 # -------------------------
-# PDF UPLOAD + PARSE
+# PDF UPLOAD
 # -------------------------
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    content = await file.read()
+    try:
+        contents = await file.read()
 
-    # Save temp file
-    with open("temp.pdf", "wb") as f:
-        f.write(content)
+        # Save temp file
+        temp_path = "temp.pdf"
+        with open(temp_path, "wb") as f:
+            f.write(contents)
 
-    text = ""
+        text = ""
 
-    # Extract text from PDF
-    with pdfplumber.open("temp.pdf") as pdf:
-        for page in pdf.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
+        # Extract PDF text safely
+        with pdfplumber.open(temp_path) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
 
-    # -------------------------
-    # SIMPLE TICKER DETECTION
-    # -------------------------
-    # Looks for patterns like: AAPL 10, TSLA 5, NVDA 3
-    matches = re.findall(r"\b([A-Z]{1,5})\b.*?(\d+\.?\d*)", text)
+        # DEBUG PRINT (IMPORTANT FOR RENDER LOGS)
+        print("PDF TEXT EXTRACTED:", text[:500])
 
-    portfolio = {}
+        # Extract ticker + numbers
+        matches = re.findall(r"\b([A-Z]{1,5})\b.*?(\d+\.?\d*)", text)
 
-    for symbol, qty in matches:
-        try:
-            portfolio[symbol] = float(qty)
-        except:
-            pass
+        portfolio = {}
 
-    # Save portfolio
-    with open("portfolio.json", "w") as f:
+        for symbol, qty in matches:
+            try:
+                portfolio[symbol] = float(qty)
+            except:
+                pass
+
+        # Save portfolio
+        with open("portfolio.json", "w") as f:
+            json.dump(portfolio, f)
+
+        return {
+            "status": "success",
+            "portfolio": portfolio
+        }
+
+    except Exception as e:
+        print("UPLOAD ERROR:", str(e))
+        return {"status": "error", "message": str(e)}
         json.dump(portfolio, f)
 
     return {
