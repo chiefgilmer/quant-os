@@ -1,44 +1,25 @@
-// LOAD DASHBOARD DATA
 async function loadData() {
   const res = await fetch("/run");
   const data = await res.json();
 
-  // PORTFOLIO DISPLAY
-  let portfolioHTML = "";
-  for (let key in data.portfolio) {
-    portfolioHTML += `<div class="card">💼 ${key}: ${data.portfolio[key]} shares</div>`;
+  // PORTFOLIO
+  let p = "";
+  for (let k in data.portfolio) {
+    p += `<div class="card">💼 ${k}: ${data.portfolio[k]}</div>`;
   }
-  document.getElementById("portfolio").innerHTML = portfolioHTML;
+  document.getElementById("portfolio").innerHTML = p;
 
-  // ALLOCATION DISPLAY
-  let allocationHTML = "";
-  if (data.allocation) {
-    for (let key in data.allocation) {
-      allocationHTML += `<div class="card">📊 ${key}: ${(data.allocation[key]*100).toFixed(1)}%</div>`;
-    }
-  }
-  document.getElementById("allocation").innerHTML = allocationHTML;
-
-  // SIGNALS DISPLAY
-  let signalsHTML = "";
-  if (data.signals) {
-    data.signals.forEach(sig => {
-      signalsHTML += `<div class="card">
-        📈 ${sig.ticker} → ${sig.signal} (score ${sig.score})
-      </div>`;
-    });
-  }
-  document.getElementById("signals").innerHTML = signalsHTML;
+  // SIGNALS
+  let s = "";
+  data.signals.forEach(sig => {
+    s += `<div class="card">📈 ${sig.ticker} → ${sig.signal}</div>`;
+  });
+  document.getElementById("signals").innerHTML = s;
 }
 
-// FILE UPLOAD FUNCTION
+// UPLOAD
 async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
-
-  if (!file) {
-    alert("Please select a file first");
-    return;
-  }
 
   const formData = new FormData();
   formData.append("file", file);
@@ -48,8 +29,11 @@ async function uploadFile() {
     body: formData
   });
 
-  alert("Portfolio uploaded successfully!");
   loadData();
+}
+
+setInterval(loadData, 10000);
+loadData();
 }
 
 // AUTO REFRESH EVERY 10 SECONDS
