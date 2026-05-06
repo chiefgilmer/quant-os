@@ -12,14 +12,14 @@ async function loadData() {
 
     let p = "";
     for (let k in data.portfolio) {
-      p += `<div class="card">💼 ${k}: ${data.portfolio[k]}</div>`;
+      p += `<div>💼 ${k}: ${data.portfolio[k]}</div>`;
     }
     document.getElementById("portfolio").innerHTML = p;
 
     let s = "";
     if (data.signals) {
       data.signals.forEach(sig => {
-        s += `<div class="card">📈 ${sig.ticker} → ${sig.signal}</div>`;
+        s += `<div>📈 ${sig.ticker} → ${sig.signal}</div>`;
       });
     }
     document.getElementById("signals").innerHTML = s;
@@ -36,34 +36,31 @@ async function uploadFile() {
 
   if (!file) {
     alert("Select a file first");
-    console.warn("NO FILE SELECTED");
     return;
   }
 
-  console.log("FILE SELECTED:", file.name);
+  console.log("FILE:", file.name);
 
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    console.log("SENDING REQUEST TO /upload...");
-
     const res = await fetch("/upload", {
       method: "POST",
       body: formData
     });
 
-    console.log("UPLOAD STATUS:", res.status);
+    console.log("STATUS:", res.status);
 
     const data = await res.json();
-    console.log("UPLOAD RESPONSE:", data);
+    console.log("RESPONSE:", data);
 
     alert("Upload complete");
     loadData();
 
   } catch (err) {
-    console.error("UPLOAD FAILED:", err);
-    alert("Upload failed — check console");
+    console.error("UPLOAD ERROR:", err);
+    alert("Upload failed");
   }
 }
 
