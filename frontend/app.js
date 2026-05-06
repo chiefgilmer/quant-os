@@ -57,3 +57,14 @@ setInterval(loadData, 10000);
 
 // INITIAL LOAD
 loadData();
+  });
+
+  alert("Portfolio uploaded successfully!");
+  loadData();
+}
+
+// AUTO REFRESH EVERY 10 SECONDS
+setInterval(loadData, 10000);
+
+// INITIAL LOAD
+loadData();
