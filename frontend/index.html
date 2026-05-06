@@ -3,15 +3,67 @@
 <head>
   <title>Quant OS Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 25px;
+      color: #38bdf8;
+    }
+
+    button {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      border: none;
+      background: #38bdf8;
+      color: black;
+      border-radius: 8px;
+    }
+
+    input {
+      margin: 10px 0;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>📊 Quant OS Dashboard</h1>
+  <h1>📊 Quant OS Portfolio Dashboard</h1>
+
+  <!-- FILE UPLOAD -->
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Upload Portfolio CSV</button>
 
   <button onclick="loadData()">Refresh</button>
 
+  <!-- PORTFOLIO -->
+  <h2>💼 Holdings</h2>
+  <div id="portfolio"></div>
+
+  <!-- ALLOCATION -->
+  <h2>📊 Allocation</h2>
+  <div id="allocation"></div>
+
+  <!-- SIGNALS -->
+  <h2>📈 Signals</h2>
   <div id="signals"></div>
 
   <script src="app.js"></script>
