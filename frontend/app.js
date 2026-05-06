@@ -1,26 +1,59 @@
+// LOAD DASHBOARD DATA
 async function loadData() {
   const res = await fetch("/run");
   const data = await res.json();
 
-  const container = document.getElementById("signals");
-  container.innerHTML = "";
+  // PORTFOLIO DISPLAY
+  let portfolioHTML = "";
+  for (let key in data.portfolio) {
+    portfolioHTML += `<div class="card">💼 ${key}: ${data.portfolio[key]} shares</div>`;
+  }
+  document.getElementById("portfolio").innerHTML = portfolioHTML;
 
-  data.signals.forEach(s => {
-    let className = "card";
+  // ALLOCATION DISPLAY
+  let allocationHTML = "";
+  if (data.allocation) {
+    for (let key in data.allocation) {
+      allocationHTML += `<div class="card">📊 ${key}: ${(data.allocation[key]*100).toFixed(1)}%</div>`;
+    }
+  }
+  document.getElementById("allocation").innerHTML = allocationHTML;
 
-    if (s.signal === "BUY") className += " buy";
-    if (s.signal === "SELL") className += " sell";
-    if (s.signal === "HOLD") className += " hold";
-
-    container.innerHTML += `
-      <div class="${className}">
-        <h2>${s.ticker}</h2>
-        <p>Signal: ${s.signal}</p>
-        <p>Score: ${s.score}</p>
-      </div>
-    `;
-  });
+  // SIGNALS DISPLAY
+  let signalsHTML = "";
+  if (data.signals) {
+    data.signals.forEach(sig => {
+      signalsHTML += `<div class="card">
+        📈 ${sig.ticker} → ${sig.signal} (score ${sig.score})
+      </div>`;
+    });
+  }
+  document.getElementById("signals").innerHTML = signalsHTML;
 }
 
+// FILE UPLOAD FUNCTION
+async function uploadFile() {
+  const file = document.getElementById("fileInput").files[0];
+
+  if (!file) {
+    alert("Please select a file first");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  await fetch("/upload", {
+    method: "POST",
+    body: formData
+  });
+
+  alert("Portfolio uploaded successfully!");
+  loadData();
+}
+
+// AUTO REFRESH EVERY 10 SECONDS
 setInterval(loadData, 10000);
+
+// INITIAL LOAD
 loadData();
