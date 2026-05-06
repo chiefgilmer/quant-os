@@ -1,38 +1,47 @@
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import FileResponse
+import json
+import pdfplumber
+import re
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return FileResponse("frontend/index.html")
+
+@app.get("/run")
+def run():
+    try:
+        with open("portfolio.json", "r") as f:
+            portfolio = json.load(f)
+    except:
+        portfolio = {}
+
+    return {"portfolio": portfolio}
+
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    print("🚀 UPLOAD ENDPOINT HIT")
+    print("UPLOAD HIT")
 
     try:
-        print("📄 FILE RECEIVED:", file.filename)
-
         contents = await file.read()
-
-        print("📦 FILE SIZE:", len(contents))
 
         with open("temp.pdf", "wb") as f:
             f.write(contents)
 
-        import pdfplumber
-
         text = ""
 
         with pdfplumber.open("temp.pdf") as pdf:
-            print("📄 PDF OPENED, pages:", len(pdf.pages))
-
-            for i, page in enumerate(pdf.pages):
+            for page in pdf.pages:
                 page_text = page.extract_text()
-                print(f"📄 PAGE {i} TEXT LENGTH:", len(page_text) if page_text else 0)
-
                 if page_text:
                     text += page_text + "\n"
 
-        print("🧠 EXTRACTED TEXT SAMPLE:", text[:300])
+        print("TEXT SAMPLE:", text[:200])
 
-        import re
         matches = re.findall(r"\b([A-Z]{1,5})\b.*?(\d+\.?\d*)", text)
-
-        print("🔍 MATCHES FOUND:", matches[:10])
 
         portfolio = {}
 
@@ -42,31 +51,11 @@ async def upload(file: UploadFile = File(...)):
             except:
                 pass
 
-        print("📊 FINAL PORTFOLIO:", portfolio)
-
-        import json
         with open("portfolio.json", "w") as f:
             json.dump(portfolio, f)
 
         return {"status": "success", "portfolio": portfolio}
 
     except Exception as e:
-        print("❌ ERROR IN UPLOAD:", str(e))
+        print("ERROR:", str(e))
         return {"status": "error", "message": str(e)}
-        with open("portfolio.json", "w") as f:
-            json.dump(portfolio, f)
-
-        return {
-            "status": "success",
-            "portfolio": portfolio
-        }
-
-    except Exception as e:
-        print("UPLOAD ERROR:", str(e))
-        return {"status": "error", "message": str(e)}
-        json.dump(portfolio, f)
-
-    return {
-        "status": "PDF processed",
-        "portfolio": portfolio
-    }
