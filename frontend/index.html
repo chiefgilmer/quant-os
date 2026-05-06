@@ -1,41 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quant OS Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
 </head>
 
 <body>
 
-  <h1>📊 Quant OS</h1>
+  <h1>📊 Quant OS Dashboard</h1>
 
-  <input type="file" id="fileInput">
-  <button onclick="uploadFile()">Upload Portfolio</button>
+  <!-- FILE UPLOAD -->
+  <div class="upload-section">
+    <input type="file" id="fileInput" accept=".pdf,.csv" />
+    <button onclick="uploadFile()">Upload Portfolio</button>
+    <button onclick="loadData()">Refresh</button>
+  </div>
 
-  <button onclick="loadData()">Refresh</button>
+  <hr/>
 
+  <!-- PORTFOLIO -->
   <h2>💼 Portfolio</h2>
   <div id="portfolio"></div>
-
-  <h2>📈 Signals</h2>
-  <div id="signals"></div>
-
-  <script src="app.js"></script>
-
-</body>
-</html>
-  <h2>💼 Holdings</h2>
-  <div id="portfolio"></div>
-
-  <!-- ALLOCATION -->
-  <h2>📊 Allocation</h2>
-  <div id="allocation"></div>
 
   <!-- SIGNALS -->
   <h2>📈 Signals</h2>
   <div id="signals"></div>
 
+  <!-- JAVASCRIPT -->
   <script src="app.js"></script>
 
 </body>
