@@ -14,13 +14,16 @@ def dashboard():
 
 @app.get("/run")
 def run():
-    with open("portfolio.json", "r") as f:
-        portfolio = json.load(f)
+    try:
+        with open("portfolio.json", "r") as f:
+            portfolio = json.load(f)
+    except:
+        portfolio = {}
+
     return {"portfolio": portfolio}
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
-
     contents = await file.read()
     text = contents.decode("utf-8").splitlines()
 
@@ -38,4 +41,4 @@ async def upload(file: UploadFile = File(...)):
     with open("portfolio.json", "w") as f:
         json.dump(portfolio, f)
 
-    return {"status": "Portfolio updated", "data": portfolio}
+    return {"status": "Portfolio updated"}
