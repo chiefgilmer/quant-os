@@ -1,14 +1,23 @@
+
 console.log("JS LOADED");
 
+document.addEventListener("DOMContentLoaded", () => {
+
+  const uploadBtn = document.getElementById("uploadBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+  uploadBtn.addEventListener("click", uploadFile);
+  refreshBtn.addEventListener("click", loadData);
+
+  loadData();
+});
+
 async function loadData() {
-  console.log("LOADING DATA...");
+  console.log("LOADING DATA");
 
   try {
     const res = await fetch("/run");
-    console.log("RUN STATUS:", res.status);
-
     const data = await res.json();
-    console.log("RUN DATA:", data);
 
     let p = "";
     for (let k in data.portfolio) {
@@ -16,26 +25,18 @@ async function loadData() {
     }
     document.getElementById("portfolio").innerHTML = p;
 
-    let s = "";
-    if (data.signals) {
-      data.signals.forEach(sig => {
-        s += `<div>📈 ${sig.ticker} → ${sig.signal}</div>`;
-      });
-    }
-    document.getElementById("signals").innerHTML = s;
-
   } catch (err) {
     console.error("LOAD ERROR:", err);
   }
 }
 
 async function uploadFile() {
-  console.log("UPLOAD CLICKED");
+  console.log("UPLOAD BUTTON CLICKED");
 
   const file = document.getElementById("fileInput").files[0];
 
   if (!file) {
-    alert("Select a file first");
+    alert("Please select a file first");
     return;
   }
 
@@ -56,6 +57,7 @@ async function uploadFile() {
     console.log("RESPONSE:", data);
 
     alert("Upload complete");
+
     loadData();
 
   } catch (err) {
@@ -63,6 +65,3 @@ async function uploadFile() {
     alert("Upload failed");
   }
 }
-
-setInterval(loadData, 10000);
-loadData();
