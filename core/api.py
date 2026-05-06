@@ -1,64 +1,71 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
 import json
-import csv
+import re
+import pdfplumber
 
 app = FastAPI()
 
-# ---------------------------
+# -------------------------
 # DASHBOARD PAGE
-# ---------------------------
+# -------------------------
 @app.get("/")
 def home():
     return FileResponse("frontend/index.html")
 
-# ---------------------------
-# LOAD PORTFOLIO + SIGNALS
-# ---------------------------
+# -------------------------
+# LOAD PORTFOLIO
+# -------------------------
 @app.get("/run")
 def run():
-
     try:
         with open("portfolio.json", "r") as f:
             portfolio = json.load(f)
     except:
         portfolio = {}
 
-    # simple fake signals (stable version)
-    signals = []
-    for ticker in portfolio.keys():
-        signals.append({
-            "ticker": ticker,
-            "signal": "HOLD",
-            "score": 0.0
-        })
+    return {"portfolio": portfolio}
 
-    return {
-        "portfolio": portfolio,
-        "signals": signals
-    }
-
-# ---------------------------
-# UPLOAD CSV PORTFOLIO
-# ---------------------------
+# -------------------------
+# PDF UPLOAD + PARSE
+# -------------------------
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
-    contents = await file.read()
-    lines = contents.decode("utf-8").splitlines()
+    content = await file.read()
 
-    reader = csv.DictReader(lines)
+    # Save temp file
+    with open("temp.pdf", "wb") as f:
+        f.write(content)
+
+    text = ""
+
+    # Extract text from PDF
+    with pdfplumber.open("temp.pdf") as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+
+    # -------------------------
+    # SIMPLE TICKER DETECTION
+    # -------------------------
+    # Looks for patterns like: AAPL 10, TSLA 5, NVDA 3
+    matches = re.findall(r"\b([A-Z]{1,5})\b.*?(\d+\.?\d*)", text)
 
     portfolio = {}
 
-    for row in reader:
-        symbol = row.get("Symbol") or row.get("symbol")
-        qty = row.get("Quantity") or row.get("quantity")
-
-        if symbol and qty:
+    for symbol, qty in matches:
+        try:
             portfolio[symbol] = float(qty)
+        except:
+            pass
 
+    # Save portfolio
     with open("portfolio.json", "w") as f:
         json.dump(portfolio, f)
 
-    return {"status": "ok", "portfolio": portfolio}
+    return {
+        "status": "PDF processed",
+        "portfolio": portfolio
+    }
