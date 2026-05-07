@@ -1,15 +1,22 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 import json
 import pdfplumber
 import re
 
 app = FastAPI()
 
+# SERVE STATIC FILES
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# HOME PAGE
 @app.get("/")
 def home():
     return FileResponse("frontend/index.html")
 
+# LOAD DATA
 @app.get("/run")
 def run():
     try:
@@ -20,6 +27,7 @@ def run():
 
     return {"portfolio": portfolio}
 
+# UPLOAD PDF
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
 
@@ -36,6 +44,7 @@ async def upload(file: UploadFile = File(...)):
         with pdfplumber.open("temp.pdf") as pdf:
             for page in pdf.pages:
                 page_text = page.extract_text()
+
                 if page_text:
                     text += page_text + "\n"
 
@@ -54,8 +63,15 @@ async def upload(file: UploadFile = File(...)):
         with open("portfolio.json", "w") as f:
             json.dump(portfolio, f)
 
-        return {"status": "success", "portfolio": portfolio}
+        return {
+            "status": "success",
+            "portfolio": portfolio
+        }
 
     except Exception as e:
-        print("ERROR:", str(e))
-        return {"status": "error", "message": str(e)}
+        print("UPLOAD ERROR:", str(e))
+
+        return {
+            "status": "error",
+            "message": str(e)
+        }
